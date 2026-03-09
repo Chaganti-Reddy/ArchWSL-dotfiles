@@ -12,6 +12,8 @@ INSTALLER_NAME="Miniconda3.sh"
 
 mkdir -p "$CHECKPOINT_DIR"
 mkdir -p "$(dirname "$LOG_FILE")"
+mkdir -p ~/Downloads
+mkdir -p ~/Documents
 
 # -------------------------- COLORS & UTILS --------------------------
 BOLD=$(tput bold)
@@ -264,7 +266,6 @@ step_git_zsh_setup() {
 
     info "Setting up ZSH..."
 
-    # Install Oh-My-Zsh if not present
     if [ ! -d "$HOME/.oh-my-zsh" ]; then
         info "Installing Oh-My-Zsh..."
         RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
@@ -272,23 +273,19 @@ step_git_zsh_setup() {
         success "Oh-My-Zsh already installed."
     fi
 
-    # Change shell to zsh
     if [[ "$SHELL" != "/bin/zsh" ]]; then
         sudo chsh -s /bin/zsh "$USER"
         info "Shell changed to zsh. Re-login or run: exec zsh"
     fi
 
-    # Run dotfiles zsh install script if present
     if [ -f "$DOTFILES_DIR/install_zsh.sh" ]; then
         bash "$DOTFILES_DIR/install_zsh.sh"
     fi
 
-    # Stow zsh config
     rm -f ~/.zshrc
     cd "$DOTFILES_DIR" || return
     stow -R zsh
 
-    # Copy custom theme if present
     local theme_src="$DOTFILES_DIR/Extras/Extras/archcraft-dwm.zsh-theme"
     local theme_dest="$HOME/.oh-my-zsh/themes/archcraft-dwm.zsh-theme"
     if [ -f "$theme_src" ]; then
@@ -355,16 +352,14 @@ step_ssh_setup() {
         success "SSH key already exists."
     fi
 
-    # Ensure ssh-agent config in shell
+    # Append ssh-agent block using explicit echoes — avoids heredoc parsing issues
     if [ -f "$HOME/.bashrc" ] && ! grep -q "ssh-agent" "$HOME/.bashrc"; then
-        cat >> "$HOME/.bashrc" << 'EOF'
-
-# SSH Agent (WSL)
-if [ -z "$SSH_AUTH_SOCK" ]; then
-    eval "$(ssh-agent -s)" > /dev/null
-    ssh-add ~/.ssh/id_ed25519 2>/dev/null
-fi
-EOF
+        echo ''                                                        >> "$HOME/.bashrc"
+        echo '# SSH Agent (WSL)'                                       >> "$HOME/.bashrc"
+        echo 'if [ -z "$SSH_AUTH_SOCK" ]; then'                        >> "$HOME/.bashrc"
+        echo '    eval "$(ssh-agent -s)" > /dev/null'                  >> "$HOME/.bashrc"
+        echo '    ssh-add ~/.ssh/id_ed25519 2>/dev/null'               >> "$HOME/.bashrc"
+        echo 'fi'                                                       >> "$HOME/.bashrc"
     fi
 }
 
@@ -379,12 +374,7 @@ step_lazydocker() {
     success "LazyDocker installed."
 }
 
-# -------------------------- 11) ANI-CLI + MPV (WSL2 note) --------------------------
-# NOTE: ani-cli and mpv CAN work in WSL2 but require a display.
-#   - Windows 11 with WSLg: works out of the box (GUI apps supported).
-#   - Windows 10: needs an X server like VcXsrv or Xming running on Windows,
-#     and DISPLAY=:0 set in your shell.
-# ani-cli itself (fetching/streaming) works headlessly fine either way.
+# -------------------------- 11) ANI-CLI + MPV --------------------------
 step_ani_mpv() {
     info "Installing ani-cli + mpv..."
     warning "mpv GUI playback in WSL2 requires WSLg (Win11) or an X server (Win10)."
@@ -393,26 +383,25 @@ step_ani_mpv() {
     success "ani-cli + mpv installed."
 }
 
-# -------------------------- 12) STOW DOTFILES (WSL-safe subset) --------------------------
+# -------------------------- 12) STOW DOTFILES --------------------------
 step_stow_wsl() {
     cd "$DOTFILES_DIR" || die "dotfiles dir not found at $DOTFILES_DIR"
 
-    # Remove stock configs that will be replaced by stow
     rm -f ~/.bashrc
 
-    # WSL-safe stow targets — no GUI/compositor/display-server configs
     local folders=(
-        bash             # bash config
-        nvim             # neovim
-        vim              # vim
-        BTOP             # btop
-        fastfetch        # fastfetch
-        atuin            # atuin shell history
-        yazi             # yazi file manager
-        pandoc           # pandoc defaults
-        latexmkrc        # latex
-        enchant          # spell check
-        ytfzf            # ytfzf youtube downloader
+        bash
+        nvim
+        vim
+        BTOP
+        fastfetch
+        atuin
+        yazi
+        pandoc
+        latexmkrc
+        enchant
+        ytfzf
+	scripts
     )
 
     for folder in "${folders[@]}"; do
@@ -424,14 +413,12 @@ step_stow_wsl() {
         fi
     done
 
-    # System-level configs (WSL-safe ones only)
     if [ -d "Extras/Extras/etc" ]; then
-        [ -f "Extras/Extras/etc/nanorc" ]     && sudo cp Extras/Extras/etc/nanorc /etc/nanorc
+        [ -f "Extras/Extras/etc/nanorc" ]      && sudo cp Extras/Extras/etc/nanorc /etc/nanorc
         [ -f "Extras/Extras/etc/bash.bashrc" ] && sudo cp Extras/Extras/etc/bash.bashrc /etc/bash.bashrc
         [ -f "Extras/Extras/etc/DIR_COLORS" ]  && sudo cp Extras/Extras/etc/DIR_COLORS /etc/DIR_COLORS
     fi
 
-    # Wakatime config decrypt (if present)
     if [ -f "Extras/Extras/.wakatime.cfg.cpt" ]; then
         cp Extras/Extras/.wakatime.cfg.cpt ~/
         ccrypt -d ~/.wakatime.cfg.cpt || warning "Wakatime decrypt skipped."
@@ -443,7 +430,8 @@ step_stow_wsl() {
 # -------------------------- EXECUTION --------------------------
 clear
 echo -e "${BOLD}${BLUE}Starting WSL Arch Setup (User: karna)${RESET}"
-echo -e "${BOLD}${CYAN}Log: $LOG_FILE${RESET}\n"
+echo -e "${BOLD}${CYAN}Log: $LOG_FILE${RESET}"
+echo ""
 
 run_task "Pacman Config"        step_pacman_config
 run_task "Install Paru"         step_install_paru
@@ -460,8 +448,9 @@ run_task "Pip Packages"         install_pip_packages
 run_task "Stow Dotfiles"        step_stow_wsl
 
 success "WSL Setup Finished."
-echo -e "\n${BOLD}${CYAN}Next steps:${RESET}"
-echo "  1. exec zsh  (or re-login) to activate zsh"
-echo "  2. nvm install --lts  (to install Node LTS)"
-echo "  3. Add ~/.ssh/id_ed25519.pub to GitHub → https://github.com/settings/keys"
-echo "  4. For mpv/ani-cli GUI: ensure WSLg is active (Win11) or start VcXsrv (Win10)"
+echo ""
+echo -e "${BOLD}${CYAN}Next steps:${RESET}"
+echo "  1. exec zsh               — activate zsh"
+echo "  2. nvm install --lts      — install Node LTS"
+echo "  3. Add ~/.ssh/id_ed25519.pub to GitHub -> https://github.com/settings/keys"
+echo "  4. For mpv/ani-cli GUI: ensure WSLg (Win11) or start VcXsrv (Win10)"
