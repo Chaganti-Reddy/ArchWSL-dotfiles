@@ -1,0 +1,3 @@
+*.bak
+./BTOP/.config/btop/btop.log
+.install.sh.kate-swp
