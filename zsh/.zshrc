@@ -42,7 +42,6 @@ eval "$(atuin init zsh)"
 bindkey '^r' atuin-up-search-viins
 
 fpath+=~/.zfunc; autoload -Uz compinit; compinit
-eval "$(thefuck --alias)"
 # eval "$(leetcode completions)"
 [[ $commands[kubectl] ]] && source <(kubectl completion zsh)
 
