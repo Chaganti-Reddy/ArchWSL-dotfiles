@@ -51,5 +51,3 @@ export NVM_DIR="$HOME/.nvm"
 # if [ -f "$HOME/.config/scripts/unix" ]; then
   # ~/.config/scripts/unix
 # fi
-
-(cat ~/.cache/wal/sequences &)
