@@ -5,6 +5,9 @@ else
   compinit -C -d ~/.zcompdump.zsh
 fi
 
+# Blinking bar cursor
+precmd() { echo -ne '\e[5 q' }
+
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="archcraft-dwm"
 # ENABLE_CORRECTION="true"
