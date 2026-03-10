@@ -66,7 +66,7 @@ local runners = {
       local out = vim.fn.fnamemodify(path, ':r')
       return make_cmd(nil, dir)
         or cmake_build_cmd(dir)
-        or (string.format('cc %s -O2 -Wall -o %s && %s', vim.fn.shellescape(path), vim.fn.shellescape(out), vim.fn.shellescape(out)))
+        or string.format('cc %s -O2 -Wall -o %s && %s', vim.fn.shellescape(path), vim.fn.shellescape(out), vim.fn.shellescape(out))
     end,
   },
   cpp = {
@@ -74,7 +74,7 @@ local runners = {
       local out = vim.fn.fnamemodify(path, ':r')
       return make_cmd(nil, dir)
         or cmake_build_cmd(dir)
-        or (string.format('c++ %s -std=c++20 -O2 -Wall -o %s && %s', vim.fn.shellescape(path), vim.fn.shellescape(out), vim.fn.shellescape(out)))
+        or string.format('c++ %s -std=c++20 -O2 -Wall -o %s && %s', vim.fn.shellescape(path), vim.fn.shellescape(out), vim.fn.shellescape(out))
     end,
   },
   rust = {
@@ -106,11 +106,9 @@ local function run_in_term(cmd, dir)
     dir = dir,
     direction = 'float',
     close_on_exit = false,
-    -- Force insert mode every time it opens
     on_open = function(term)
       vim.api.nvim_buf_set_keymap(term.bufnr, 't', '<Esc>', [[<C-\><C-n>]], { noremap = true, silent = true })
       vim.api.nvim_buf_set_keymap(term.bufnr, 't', '<Esc><Esc>', [[<C-\><C-n>:hide<CR>]], { noremap = true, silent = true })
-
       vim.schedule(function() vim.cmd 'startinsert' end)
     end,
     on_close = function() runner_terminal = nil end,
@@ -126,7 +124,7 @@ return {
   config = function()
     require('toggleterm').setup {
       size = 20,
-      open_mapping = [[<c-\>]], -- Standard toggleterm behavior for default terminals
+      open_mapping = [[<c-\>]],
       shade_terminals = true,
       start_in_insert = true,
       persist_size = true,
@@ -136,7 +134,7 @@ return {
 
     local map = vim.keymap.set
 
-    -- 1. Smart Run (Alt-r)
+    -- 1. Smart Run (Alt-r): auto-detects language and runs the file
     map({ 'n', 't' }, '<A-r>', function()
       local current_buf = vim.api.nvim_get_current_buf()
 
@@ -161,30 +159,17 @@ return {
       run_in_term(cmd, dir)
     end, { desc = 'Smart Run: Always Restart' })
 
-    -- 2. Standard Floating/Horizontal Terms (Alt-f / Alt-h)
-    -- These will use the default Toggleterm logic and NOT the special Runner Esc mappings
+    -- 2. Standard Floating Terminal (Alt-f)
     map({ 'n', 't' }, '<A-f>', function()
       local buf = last_source_buf or vim.api.nvim_get_current_buf()
       require('toggleterm').toggle(1, 0, get_buf_dir(buf), 'float')
-    end, { desc = 'Standard Float Term' })
+    end, { desc = 'Float Terminal' })
 
+    -- 3. Standard Horizontal Terminal (Alt-h)
     map({ 'n', 't' }, '<A-h>', function()
       local buf = last_source_buf or vim.api.nvim_get_current_buf()
       require('toggleterm').toggle(2, 15, get_buf_dir(buf), 'horizontal')
-    end, { desc = 'Standard Horizontal Term' })
-
-    -- 3. LazyGit (leader-gt)
-    map('n', '<leader>tg', function()
-      local Terminal = require('toggleterm.terminal').Terminal
-      local lazygit = Terminal:new {
-        cmd = 'lazygit',
-        dir = get_buf_dir(last_source_buf or vim.api.nvim_get_current_buf()),
-        direction = 'float',
-        hidden = true,
-        close_on_exit = true,
-        float_opts = { border = 'curved' },
-      }
-      lazygit:toggle()
-    end, { desc = 'LazyGit' })
+    end, { desc = 'Horizontal Terminal' })
   end,
 }
+
