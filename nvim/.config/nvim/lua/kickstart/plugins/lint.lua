@@ -9,6 +9,18 @@ return {
       local lint = require 'lint'
       lint.linters_by_ft = {
         markdown = { 'markdownlint' },
+        -- Python: Ruff is the modern, ultra-fast choice
+        python = { 'ruff' },
+
+        -- Web Dev: Use eslint_d (the 'd' is for daemon, it's 10x faster)
+        javascript = { 'eslint_d' },
+        typescript = { 'eslint_d' },
+        javascriptreact = { 'eslint_d' },
+        typescriptreact = { 'eslint_d' },
+
+        -- Styles and HTML
+        css = { 'stylelint' },
+        html = { 'htmlhint' },
       }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
@@ -55,6 +67,7 @@ return {
           if vim.bo.modifiable then lint.try_lint() end
         end,
       })
+      vim.keymap.set('n', '<leader>cl', function() lint.try_lint() end, { desc = '[C]ode [L]int' })
     end,
   },
 }
