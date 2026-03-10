@@ -164,8 +164,38 @@ vim.keymap.set('n', '<leader>bb', '<cmd>e #<CR>', { desc = '[B]uffer [S]witch to
 vim.keymap.set('n', '<leader>bl', '<leader><leader>', { desc = '[B]uffer [L]ist', remap = true })
 
 -- [[ Split Management ]]
-vim.keymap.set('n', '<leader>\\', '<cmd>vsplit<CR>', { desc = 'Split Vertical' })
-vim.keymap.set('n', '<leader>\\-', '<cmd>split<CR>', { desc = 'Split Horizontal' })
+local function split_with_picker(cmd, scope)
+  vim.cmd(cmd)
+  local win = vim.api.nvim_get_current_win()
+  local picked = false
+
+  local opts = {
+    on_close = function()
+      if not picked and vim.api.nvim_win_is_valid(win) then vim.api.nvim_win_close(win, true) end
+    end,
+    actions = {
+      confirm = function(picker, item)
+        picked = true
+        picker:close()
+        if item and vim.api.nvim_win_is_valid(win) then
+          vim.api.nvim_set_current_win(win)
+          vim.cmd('edit ' .. vim.fn.fnameescape(item.file))
+        end
+      end,
+    },
+  }
+
+  if scope == 'project' then
+    Snacks.picker.smart(vim.tbl_extend('force', opts, { cwd = Snacks.git.get_root() }))
+  else
+    Snacks.picker.files(vim.tbl_extend('force', opts, { cwd = vim.fn.expand '~' }))
+  end
+end
+
+vim.keymap.set('n', '<leader>\\\\', function() split_with_picker('vsplit', 'project') end, { desc = 'Split Vertical + Pick (Project)' })
+vim.keymap.set('n', '<leader>\\-', function() split_with_picker('split', 'project') end, { desc = 'Split Horizontal + Pick (Project)' })
+vim.keymap.set('n', '<leader>\\V', function() split_with_picker('vsplit', 'home') end, { desc = 'Split Vertical + Pick (Home)' })
+vim.keymap.set('n', '<leader>\\H', function() split_with_picker('split', 'home') end, { desc = 'Split Horizontal + Pick (Home)' })
 vim.keymap.set('n', '<leader>\\=', '<C-w>=', { desc = 'Equalize Splits' })
 vim.keymap.set('n', '<leader>\\x', '<cmd>close<CR>', { desc = 'Close Split' })
 vim.keymap.set('n', '<leader>\\o', '<cmd>only<CR>', { desc = 'Close Other Splits' })
@@ -281,6 +311,7 @@ require('lazy').setup({
     opts = {
       library = {
         { path = '${3rd}/luv/library', words = { 'vim%.uv' } },
+        { path = 'snacks.nvim', words = { 'Snacks' } },
       },
     },
   },
@@ -362,8 +393,6 @@ require('lazy').setup({
           },
         } or {},
       }
-
-      local capabilities = require('blink.cmp').get_lsp_capabilities()
 
       ---@type table<string, vim.lsp.Config>
       local servers = {
@@ -575,7 +604,7 @@ require('lazy').setup({
           auto_show_delay_ms = 100,
           window = { border = 'rounded', max_width = 60, max_height = 20 },
         },
-        ghost_text = { enabled = true },
+        ghost_text = { enabled = false },
         menu = {
           scrollbar = false,
           draw = {
@@ -948,5 +977,13 @@ require('lazy').setup({
 })
 
 vim.keymap.set('n', '<leader>co', '<cmd>AerialToggle!<CR>', { desc = 'Code [O]utline' })
+
+vim.keymap.set('n', '<leader>tc', function()
+  vim.cmd 'CodeiumToggle'
+  vim.defer_fn(function()
+    local status = (vim.g.codeium_enabled == 0 or vim.g.codeium_enabled == false) and '󰚤 Codeium disabled' or '󰚤 Codeium enabled'
+    vim.api.nvim_echo({ { status, 'WarningMsg' } }, true, {})
+  end, 100)
+end, { desc = '[T]oggle [C]odeium' })
 
 -- vim: ts=2 sts=2 sw=2 et
