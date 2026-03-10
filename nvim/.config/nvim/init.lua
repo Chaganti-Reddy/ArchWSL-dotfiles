@@ -256,6 +256,17 @@ vim.keymap.set('n', '<leader>bp', '<cmd>bprev<CR>', { desc = '[B]uffer [P]reviou
 vim.keymap.set('n', '<leader>bb', '<cmd>e #<CR>', { desc = '[B]uffer [S]witch to Last' })
 vim.keymap.set('n', '<leader>bl', '<leader><leader>', { desc = '[B]uffer [L]ist', remap = true })
 
+-- [[ Split Management ]]
+vim.keymap.set('n', '<leader>\\', '<cmd>vsplit<CR>', { desc = 'Split Vertical' })
+vim.keymap.set('n', '<leader>\\-', '<cmd>split<CR>', { desc = 'Split Horizontal' })
+vim.keymap.set('n', '<leader>\\=', '<C-w>=', { desc = 'Equalize Splits' })
+vim.keymap.set('n', '<leader>\\x', '<cmd>close<CR>', { desc = 'Close Split' })
+vim.keymap.set('n', '<leader>\\o', '<cmd>only<CR>', { desc = 'Close Other Splits' })
+vim.keymap.set('n', '<leader>\\h', '<cmd>vertical resize -2<CR>', { desc = 'Shrink Width' })
+vim.keymap.set('n', '<leader>\\l', '<cmd>vertical resize +2<CR>', { desc = 'Grow Width' })
+vim.keymap.set('n', '<leader>\\k', '<cmd>resize +2<CR>', { desc = 'Grow Height' })
+vim.keymap.set('n', '<leader>\\j', '<cmd>resize -2<CR>', { desc = 'Shrink Height' })
+
 vim.keymap.set('n', '<Esc>', function()
   if vim.g.saved_cursor then
     vim.api.nvim_win_set_cursor(0, vim.g.saved_cursor)
@@ -426,6 +437,7 @@ require('lazy').setup({
         { '<leader>b', group = '[B]uffer', icon = '󰓩 ' },
         { '<leader>e', desc = '[E]xplorer (current file)', icon = '󰙅 ' },
         { '<leader>E', desc = '[E]xplorer (cwd)', icon = '󰙅 ' },
+        { '<leader>\\', group = '[\\]Splits', icon = '󱂬 ' },
       },
     },
   },
@@ -747,7 +759,6 @@ require('lazy').setup({
       -- See :help vim.diagnostic.Opts
       vim.diagnostic.config {
         severity_sort = true,
-        virtual_text = false, -- Using tiny inline diagnostic plugin
         float = {
           border = 'rounded',
           source = 'if_many',
@@ -1471,8 +1482,8 @@ require('lazy').setup({
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   -- { import = 'custom.plugins' },
-  --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
+  --
   -- Or use telescope!
   -- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
   -- you can continue same window with `<space>sr` which resumes last telescope search
