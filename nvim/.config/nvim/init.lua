@@ -737,10 +737,8 @@ require('lazy').setup({
           local ft = vim.bo.filetype
           if ft == 'snacks_dashboard' or ft == '' then
             vim.wo.winbar = ''
-          elseif require('nvim-navic').is_available() then
-            vim.wo.winbar = "%{%v:lua.require'nvim-navic'.get_location()%}"
           else
-            vim.wo.winbar = ''
+            vim.wo.winbar = "%{%v:lua.require'nvim-navic'.get_location()%}"
           end
         end,
       })
