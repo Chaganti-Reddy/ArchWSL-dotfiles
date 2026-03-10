@@ -49,7 +49,24 @@ return {
       }
 
       -- IMPORTANT: Disable the default Neovim virtual text so they don't overlap
-      vim.diagnostic.config { virtual_text = false }
+      local diag_mode = 1 -- 1 = tiny-inline, 2 = virtual text, 3 = off
+
+      vim.keymap.set('n', '<leader>td', function()
+        diag_mode = diag_mode % 3 + 1
+        if diag_mode == 1 then
+          require('tiny-inline-diagnostic').enable()
+          vim.diagnostic.config { virtual_text = false }
+          print 'Diagnostics: tiny-inline'
+        -- elseif diag_mode == 2 then
+        --   require('tiny-inline-diagnostic').disable()
+        --   vim.diagnostic.config { virtual_text = true }
+        --   print 'Diagnostics: virtual text'
+        else
+          require('tiny-inline-diagnostic').disable()
+          vim.diagnostic.config { virtual_text = false }
+          print 'Diagnostics: off'
+        end
+      end, { desc = '[T]oggle [D]iagnostics' })
     end,
   },
 
