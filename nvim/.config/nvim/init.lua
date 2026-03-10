@@ -248,6 +248,14 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 vim.keymap.set('n', '[b', '<cmd>bprev<CR>', { desc = 'Previous Buffer' })
 vim.keymap.set('n', ']b', '<cmd>bnext<CR>', { desc = 'Next Buffer' })
 
+-- Buffer management
+vim.keymap.set('n', '<leader>bd', function() require('mini.bufremove').delete() end, { desc = '[B]uffer [D]elete' })
+vim.keymap.set('n', '<leader>bD', function() require('mini.bufremove').delete(0, true) end, { desc = '[B]uffer [D]elete Force' })
+vim.keymap.set('n', '<leader>bn', '<cmd>bnext<CR>', { desc = '[B]uffer [N]ext' })
+vim.keymap.set('n', '<leader>bp', '<cmd>bprev<CR>', { desc = '[B]uffer [P]revious' })
+vim.keymap.set('n', '<leader>bb', '<cmd>e #<CR>', { desc = '[B]uffer [S]witch to Last' })
+vim.keymap.set('n', '<leader>bl', '<leader><leader>', { desc = '[B]uffer [L]ist', remap = true })
+
 vim.keymap.set('n', '<Esc>', function()
   if vim.g.saved_cursor then
     vim.api.nvim_win_set_cursor(0, vim.g.saved_cursor)
@@ -357,15 +365,67 @@ require('lazy').setup({
     ---@diagnostic disable-next-line: missing-fields
     opts = {
       -- delay between pressing a key and opening which-key (milliseconds)
+      -- this setting is independent of vim.o.timeoutlen
       delay = 0,
-      icons = { mappings = vim.g.have_nerd_font },
+      -- preset = 'modern',
+      preset = 'helix',
+      win = {
+        border = 'rounded',
+        padding = { 1, 2 },
+      },
+      icons = {
+        -- set icon mappings to true if you have a Nerd Font
+        mappings = vim.g.have_nerd_font,
+        breadcrumb = '»',
+        separator = '➜',
+        group = '+',
+        -- If you are using a Nerd Font: set icons.keys to an empty table which will use the
+        -- default which-key.nvim defined Nerd Font icons, otherwise define a string table
+        keys = vim.g.have_nerd_font and {} or {
+          Up = '<Up> ',
+          Down = '<Down> ',
+          Left = '<Left> ',
+          Right = '<Right> ',
+          C = '<C-…> ',
+          M = '<M-…> ',
+          D = '<D-…> ',
+          S = '<S-…> ',
+          CR = '<CR> ',
+          Esc = '<Esc> ',
+          ScrollWheelDown = '<ScrollWheelDown> ',
+          ScrollWheelUp = '<ScrollWheelUp> ',
+          NL = '<NL> ',
+          BS = '<BS> ',
+          Space = '<Space> ',
+          Tab = '<Tab> ',
+          F1 = '<F1>',
+          F2 = '<F2>',
+          F3 = '<F3>',
+          F4 = '<F4>',
+          F5 = '<F5>',
+          F6 = '<F6>',
+          F7 = '<F7>',
+          F8 = '<F8>',
+          F9 = '<F9>',
+          F10 = '<F10>',
+          F11 = '<F11>',
+          F12 = '<F12>',
+        },
+      },
 
       -- Document existing key chains
       spec = {
-        { '<leader>s', group = '[S]earch', mode = { 'n', 'v' } },
-        { '<leader>t', group = '[T]oggle' },
-        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
-        { 'gr', group = 'LSP Actions', mode = { 'n' } },
+        { '<leader>s', group = '[S]earch', icon = ' ' },
+        { '<leader>t', group = '[T]oggles', icon = ' ' },
+        { '<leader>g', group = '[G]it', icon = '󰊢 ' },
+        { '<leader>gh', group = 'Git [H]unk', mode = { 'n', 'v' }, icon = '󰊠 ' },
+        { '<leader>c', group = '[C]ode', mode = { 'n', 'x' }, icon = ' ' },
+        { '<leader>f', group = '[F]ile', icon = '󰈔 ' },
+        { '<leader>b', group = '[B]uffer', icon = '󰓩 ' },
+        { '<leader>d', group = '[D]ebug', icon = '󰃤 ' },
+        { '<leader>b', group = '[B]uffer', icon = '󰓩 ' },
+        { '<leader>e', desc = '[E]xplorer (current file)', icon = '󰙅 ' },
+        { '<leader>E', desc = '[E]xplorer (cwd)', icon = '󰙅 ' },
       },
     },
   },
@@ -527,6 +587,18 @@ require('lazy').setup({
 
   -- LSP Plugins
   {
+    -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
+    -- used for completion, annotations and signatures of Neovim apis
+    'folke/lazydev.nvim',
+    ft = 'lua',
+    opts = {
+      library = {
+        -- Load luvit types when the `vim.uv` word is found
+        { path = '${3rd}/luv/library', words = { 'vim%.uv' } },
+      },
+    },
+  },
+  {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
     dependencies = {
@@ -595,15 +667,42 @@ require('lazy').setup({
 
           -- Rename the variable under your cursor.
           --  Most Language Servers support renaming across files, etc.
-          map('grn', vim.lsp.buf.rename, '[R]e[n]ame')
+          map('grn', '<cmd>Lspsaga rename<CR>', '[R]e[n]ame')
+          map('<leader>cr', '<cmd>Lspsaga rename<CR>', '[R]e[n]ame')
 
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
-          map('gra', vim.lsp.buf.code_action, '[G]oto Code [A]ction', { 'n', 'x' })
+          map('gra', '<cmd>Lspsaga code_action<CR>', '[G]oto Code [A]ction', { 'n', 'x' })
+          map('<leader>ca', '<cmd>Lspsaga code_action<CR>', '[C]ode [A]ction', { 'n', 'v' })
+
+          -- Find references for the word under your cursor.
+          map('grr', '<cmd>Lspsaga finder<CR>', '[G]oto [R]eferences')
+
+          -- Jump to the definition of the word under your cursor.
+          --  This is where a variable was first declared, or where a function is defined, etc.
+          --  To jump back, press <C-t>.
+          map('grd', '<cmd>Lspsaga peek_definition<CR>', '[G]oto [D]efinition')
+
+          -- Jump to the implementation of the word under your cursor.
+          --  Useful when your language has ways of declaring types without an actual implementation.
+          map('gri', function() Snacks.picker.lsp_implementations() end, '[G]oto [I]mplementation')
 
           -- WARN: This is not Goto Definition, this is Goto Declaration.
           --  For example, in C this would take you to the header.
           map('grD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+
+          -- Fuzzy find all the symbols in your current document.
+          --  Symbols are things like variables, functions, types, etc.
+          map('gO', function() Snacks.picker.lsp_symbols() end, 'Open Document Symbols')
+
+          -- Fuzzy find all the symbols in your current workspace.
+          --  Similar to document symbols, except searches over your entire project.
+          map('gW', function() Snacks.picker.lsp_workspace_symbols() end, 'Open Workspace Symbols')
+
+          -- Jump to the type of the word under your cursor.
+          --  Useful when you're not sure what type a variable is and you want to see
+          --  the definition of its *type*, not where it was *defined*.
+          map('grt', function() Snacks.picker.lsp_type_definitions() end, '[G]oto [T]ype Definition')
 
           -- The following two autocommands are used to highlight references of the
           -- word under your cursor when your cursor rests there for a little while.
@@ -644,12 +743,83 @@ require('lazy').setup({
         end,
       })
 
+      -- Diagnostic Config
+      -- See :help vim.diagnostic.Opts
+      vim.diagnostic.config {
+        severity_sort = true,
+        virtual_text = false, -- Using tiny inline diagnostic plugin
+        float = {
+          border = 'rounded',
+          source = 'if_many',
+          header = '',
+          prefix = '',
+        },
+        underline = { severity = vim.diagnostic.severity.ERROR },
+        signs = vim.g.have_nerd_font and {
+          text = {
+            [vim.diagnostic.severity.ERROR] = '󰅚 ',
+            [vim.diagnostic.severity.WARN] = '󰀪 ',
+            [vim.diagnostic.severity.INFO] = '󰋽 ',
+            [vim.diagnostic.severity.HINT] = '󰌶 ',
+          },
+        } or {},
+        -- Using tiny inline diagnostic plugin
+        -- virtual_text = {
+        --   source = 'if_many',
+        --   spacing = 4,
+        --   format = function(diagnostic)
+        --     local diagnostic_message = {
+        --       [vim.diagnostic.severity.ERROR] = diagnostic.message,
+        --       [vim.diagnostic.severity.WARN] = diagnostic.message,
+        --       [vim.diagnostic.severity.INFO] = diagnostic.message,
+        --       [vim.diagnostic.severity.HINT] = diagnostic.message,
+        --     }
+        --     return diagnostic_message[diagnostic.severity]
+        --   end,
+        -- },
+      }
+
+      -- LSP servers and clients are able to communicate to each other what features they support.
+      --  By default, Neovim doesn't support everything that is in the LSP specification.
+      --  When you add blink.cmp, luasnip, etc. Neovim now has *more* capabilities.
+      --  So, we create new capabilities with blink.cmp, and then broadcast that to the servers.
+      local capabilities = require('blink.cmp').get_lsp_capabilities()
+
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --  See `:help lsp-config` for information about keys and how to configure
       ---@type table<string, vim.lsp.Config>
       local servers = {
-        -- clangd = {},
+        clangd = {
+          -- Prevent "multiple different offset encodings" warning
+          capabilities = { offsetEncoding = { 'utf-16' } },
+          cmd = {
+            'clangd',
+            '--background-index',
+            '--clang-tidy',
+            '--header-insertion=iwyu',
+            '--completion-style=detailed',
+            '--function-arg-placeholders',
+            '--fallback-style=llvm',
+          },
+          init_options = {
+            usePlaceholders = true,
+            completeUnimported = true,
+            clangdFileStatus = true,
+          },
+        },
+        -- Python: basedpyright is a more modern fork of pyright with better type checking
+        basedpyright = {
+          settings = {
+            basedpyright = {
+              analysis = {
+                typeCheckingMode = 'basic', -- "standard" or "all" for stricter checks
+                autoSearchPaths = true,
+                useLibraryCodeForTypes = true,
+              },
+            },
+          },
+        },
         -- gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},
@@ -690,6 +860,46 @@ require('lazy').setup({
             Lua = {},
           },
         },
+        jsonls = {},
+        yamlls = {},
+        bashls = {},
+        dockerls = {},
+        docker_compose_language_service = {},
+        texlab = {
+          settings = {
+            texlab = {
+              build = {
+                onSave = true, -- Auto build on save
+                forwardSearchAfter = true,
+              },
+              forwardSearch = {
+                executable = 'okular',
+                args = { '--unique', 'file:%p#src:%l%f' },
+              },
+              chktex = { onOpenAndSave = true, onEdit = true },
+              diagnosticsDelay = 200,
+              diagnostics = {
+                ignoredPatterns = {}, -- Add patterns here to ignore specific warnings
+                showExactlyOnce = true,
+              },
+              latexformatter = 'latexindent',
+              formatterLineLength = 80,
+              bibtexFormatter = 'texlab',
+              -- Add completion for references and citations
+              completion = {
+                matcher = 'fuzzy',
+                executable = 'latexmk',
+                args = { '-pdf', '-ln', '-f', '%f' },
+                onSave = true,
+              },
+              -- This allows texlab to suggest packages you haven't even typed yet
+              experimental = {
+                citationCommands = { 'cite', 'parencite' },
+                labelReferenceCommands = { 'ref', 'eqref' },
+              },
+            },
+          },
+        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -702,7 +912,13 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         -- You can add other tools here that you want Mason to install
-        'codelldb',
+        'stylua', -- formatter
+        'ruff', -- python linter/formatter
+        'eslint_d', -- web linter
+        'stylelint', -- css linter
+        'htmlhint', -- html linter
+        'markdownlint', -- markdown linter
+        'codelldb', -- Rust Debugging
       })
 
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
@@ -711,6 +927,83 @@ require('lazy').setup({
         vim.lsp.config(name, server)
         vim.lsp.enable(name)
       end
+    end,
+  },
+
+  { -- LSP Saga
+    'nvimdev/lspsaga.nvim',
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      'nvim-tree/nvim-web-devicons',
+    },
+    event = 'LspAttach',
+    config = function()
+      require('lspsaga').setup {
+        ui = {
+          winblend = 0,
+          border = 'rounded',
+          devicon = true,
+          title = false,
+          expand = '',
+          collapse = '',
+          code_action = '💡',
+          action_fix = ' ',
+        },
+        hover = {
+          border = 'rounded',
+          max_width = 0.6,
+          open_link = 'gx',
+        },
+        lightbulb = {
+          enable = true,
+        },
+        symbol_in_winbar = {
+          enable = true,
+          separator = '  ',
+          hide_keyword = true,
+          show_file = true,
+          folder_level = 2,
+        },
+        outline = {
+          layout = 'float',
+          max_height = 0.7,
+          left_width = 0.3,
+          auto_preview = true,
+          close_after_jump = true,
+          keys = {
+            toggle_or_jump = '<CR>',
+            quit = 'q',
+            jump = 'o',
+          },
+        },
+        finder = { keys = { quit = { 'q', '<Esc>' } } },
+        code_action = { keys = { quit = { 'q', '<Esc>' } } },
+        rename = { in_select = true, keys = { quit = '<Esc>', exec = '<CR>' } },
+      }
+
+      -- Keymaps
+      local map = vim.keymap.set
+      map('n', '<leader>co', '<cmd>Lspsaga outline<CR>', { desc = 'Code [O]utline' })
+      map('n', '<leader>cB', '<cmd>Lspsaga winbar_toggle<CR>', { desc = 'Toggle [B]readcrumbs' })
+
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = {
+          'lspsagafinder',
+          'lspsagaoutline',
+          'sagarename',
+          'sagacodeaction',
+          'sagahover',
+          'safinder',
+          'sdefinition',
+          'gitsigns-blame',
+          'help',
+        },
+        callback = function()
+          map('n', '<Esc>', '<cmd>close<CR>', { buffer = true, silent = true })
+          map('i', '<Esc>', '<cmd>close<CR>', { buffer = true, silent = true })
+          map('n', 'q', '<cmd>close<CR>', { buffer = true, silent = true })
+        end,
+      })
     end,
   },
 
@@ -746,7 +1039,17 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-rust = { 'rustfmt' },
+        rust = { 'rustfmt' },
+        python = { 'ruff_format', 'ruff_organize_imports' },
+        javascript = { 'prettierd' },
+        typescript = { 'prettierd' },
+        javascriptreact = { 'prettierd' },
+        typescriptreact = { 'prettierd' },
+        css = { 'prettierd' },
+        html = { 'prettierd' },
+        markdown = { 'prettierd' },
+        tex = { 'latexindent' },
+        bib = { 'bibtex-tidy' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -776,12 +1079,15 @@ rust = { 'rustfmt' },
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_lua').lazy_load {
+                paths = { vim.fn.stdpath 'config' .. '/lua/custom/snippets' },
+              }
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
         opts = {},
       },
@@ -812,6 +1118,11 @@ rust = { 'rustfmt' },
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
         preset = 'default',
+        ['<Tab>'] = { 'select_next', 'fallback' },
+        ['<S-Tab>'] = { 'select_prev', 'fallback' },
+        ['<Up>'] = { 'select_prev', 'fallback' },
+        ['<Down>'] = { 'select_next', 'fallback' },
+        ['<CR>'] = { 'accept', 'fallback' },
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -824,13 +1135,45 @@ rust = { 'rustfmt' },
       },
 
       completion = {
+        list = {
+          selection = {
+            preselect = true, -- Select the first word automatically
+            auto_insert = false, -- Auto Insert the selected word
+          },
+        },
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
-        documentation = { auto_show = false, auto_show_delay_ms = 500 },
+        documentation = {
+          auto_show = true,
+          auto_show_delay_ms = 100,
+          window = {
+            border = 'rounded',
+            max_width = 60,
+            max_height = 20,
+          },
+        },
+        -- Display completion as virtual text (like Copilot)
+        ghost_text = { enabled = true },
+        menu = {
+          scrollbar = false,
+          draw = {
+            columns = {
+              { 'kind_icon' },
+              { 'label', 'label_description', gap = 1 },
+              { 'kind' },
+            },
+            components = {
+              kind = { highlight = 'Comment' },
+            },
+          },
+        },
       },
 
       sources = {
-        default = { 'lsp', 'path', 'snippets' },
+        default = { 'lsp', 'path', 'snippets', 'lazydev', 'buffer' },
+        providers = {
+          lazydev = { name = 'LazyDev', module = 'lazydev.integrations.blink', score_offset = 100 },
+        },
       },
 
       snippets = { preset = 'luasnip' },
@@ -845,7 +1188,7 @@ rust = { 'rustfmt' },
       fuzzy = { implementation = 'lua' },
 
       -- Shows a signature help window while you type arguments for a function
-      signature = { enabled = true },
+      signature = { enabled = true, window = { border = 'rounded' } },
     },
   },
 
@@ -914,6 +1257,24 @@ rust = { 'rustfmt' },
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
+      require('mini.pairs').setup {
+        modes = { insert = true, command = false, terminal = false },
+        mappings = {
+          ['('] = { action = 'open', pair = '()', neigh_pattern = '[^\\].' },
+          ['['] = { action = 'open', pair = '[]', neigh_pattern = '[^\\].' },
+          ['{'] = { action = 'open', pair = '{}', neigh_pattern = '[^\\].' },
+          [')'] = { action = 'close', pair = '()', neigh_pattern = '[^\\].' },
+          [']'] = { action = 'close', pair = '[]', neigh_pattern = '[^\\].' },
+          ['}'] = { action = 'close', pair = '{}', neigh_pattern = '[^\\].' },
+          ['"'] = { action = 'closeopen', pair = '""', neigh_pattern = '[^\\].', register = { cr = false } },
+          ["'"] = { action = 'closeopen', pair = "''", neigh_pattern = '[^%a\\].', register = { cr = false } },
+          ['`'] = { action = 'closeopen', pair = '``', neigh_pattern = '[^\\].', register = { cr = false } },
+        },
+      }
+
+      -- Better buffer deletion (closes buffer without closing the window/split)
+      require('mini.bufremove').setup()
+
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
@@ -943,74 +1304,92 @@ rust = { 'rustfmt' },
     end,
   },
 
-{
-  'mrcjkb/rustaceanvim',
-  version = '^5',
-  lazy = false,
-  ft = { 'rust' },
-  config = function()
-    vim.g.rustaceanvim = {
-      tools = {
-        hover_actions = { auto_focus = true },
-      },
-      server = {
-        on_attach = function(_, bufnr)
- vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+  {
+    'mrcjkb/rustaceanvim',
+    version = '^6',
+    lazy = false,
+    ft = { 'rust' },
+    init = function()
+      local mason_path = vim.fn.stdpath 'data' .. '/mason/packages/codelldb/'
+      local extension_path = mason_path .. 'extension/'
+      local codelldb_path = extension_path .. 'adapter/codelldb'
+      local liblldb_path = extension_path .. 'lldb/lib/liblldb'
+      local sysname = vim.uv.os_uname().sysname
+      if sysname:find 'Windows' then
+        codelldb_path = extension_path .. 'adapter\\codelldb.exe'
+        liblldb_path = extension_path .. 'bin\\liblldb.dll'
+      elseif sysname:find 'Darwin' then
+        liblldb_path = extension_path .. 'lldb/lib/liblldb.dylib'
+      else
+        liblldb_path = extension_path .. 'lldb/lib/liblldb.so'
+      end
 
-          -- Hover actions
-          vim.keymap.set('n', '<leader>rh', function()
-            vim.cmd.RustLsp 'hover actions'
-          end, { buffer = bufnr, desc = '[R]ust [H]over Actions' })
+      vim.g.rustaceanvim = {
+        server = {
+          status_notify_level = false,
+          on_attach = function(_, bufnr)
+            vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
 
-          -- Code action group
-          vim.keymap.set('n', '<leader>ra', function()
-            vim.cmd.RustLsp 'codeAction'
-          end, { buffer = bufnr, desc = '[R]ust Code [A]ction' })
+            require('which-key').add {
+              { '<leader>r', group = '[R]ust', icon = '󱘗 ', buffer = bufnr },
+              { '<leader>rm', group = '[R]ust [M]ove', icon = ' ', buffer = bufnr },
+            }
 
-          -- Run the current test
-          vim.keymap.set('n', '<leader>rt', function()
-            vim.cmd.RustLsp 'runnables'
-          end, { buffer = bufnr, desc = '[R]ust [T]est/Run' })
+            local map = function(keys, func, desc) vim.keymap.set('n', keys, func, { buffer = bufnr, desc = 'Rust: ' .. desc }) end
 
-          -- Debug
-          vim.keymap.set('n', '<leader>rd', function()
-            vim.cmd.RustLsp 'debuggables'
-          end, { buffer = bufnr, desc = '[R]ust [D]ebug' })
-
-          -- Expand macro
-          vim.keymap.set('n', '<leader>rm', function()
-            vim.cmd.RustLsp 'expandMacro'
-          end, { buffer = bufnr, desc = '[R]ust Expand [M]acro' })
-
-          -- Move item up/down
-          vim.keymap.set('n', '<leader>rmu', function()
-            vim.cmd.RustLsp { 'moveItem', 'up' }
-          end, { buffer = bufnr, desc = '[R]ust Move Item [U]p' })
-          vim.keymap.set('n', '<leader>rmd', function()
-            vim.cmd.RustLsp { 'moveItem', 'down' }
-          end, { buffer = bufnr, desc = '[R]ust Move Item [D]own' })
-        end,
-        settings = {
-  ['rust-analyzer'] = {
-    checkOnSave = true,          -- just a boolean now
-    check = {
-      command = 'clippy',        -- clippy goes here instead
-    },
-    cargo = { allFeatures = true },
-    procMacro = { enable = true },
-    inlayHints = {
-      bindingModeHints = { enable = true },
-      chainingHints = { enable = true },
-      closingBraceHints = { enable = true },
-      parameterHints = { enable = true },
-      typeHints = { enable = true },
-    },
+            map('<leader>rr', '<cmd>RustLsp runnables<CR>', '[R]unnables')
+            map('<leader>rd', '<cmd>RustLsp debuggables<CR>', '[D]ebuggables')
+            map('<leader>rt', '<cmd>RustLsp testables<CR>', '[T]estables')
+            map('<leader>re', '<cmd>RustLsp expandMacro<CR>', '[E]xpand Macro')
+            map('<leader>rh', '<cmd>RustLsp hover actions<CR>', '[H]over Actions')
+            map('<leader>ra', '<cmd>RustLsp codeAction<CR>', '[A]ction')
+            map('<leader>rx', '<cmd>RustLsp explainError<CR>', 'E[x]plain Error')
+            map('<leader>rg', '<cmd>RustLsp crateGraph<CR>', '[G]raph Crates')
+            map('<leader>rn', vim.lsp.buf.rename, '[N]ame Rename')
+            map('<leader>rmu', function() vim.cmd.RustLsp { 'moveItem', 'up' } end, '[M]ove Item [U]p')
+            map('<leader>rmd', function() vim.cmd.RustLsp { 'moveItem', 'down' } end, '[M]ove Item [D]own')
+          end,
+          default_settings = {
+            ['rust-analyzer'] = {
+              checkOnSave = {
+                command = 'clippy',
+                enable = true,
+              },
+              diagnostics = {
+                enable = true,
+                refreshSupport = false,
+              },
+              cargo = {
+                allFeatures = true,
+                loadOutDirsFromCheck = true,
+                runBuildScripts = true,
+              },
+              procMacro = {
+                enable = true,
+                ignored = {
+                  ['async-trait'] = { 'async_trait' },
+                  ['napi-derive'] = { 'napi' },
+                  ['async-recursion'] = { 'async_recursion' },
+                },
+              },
+              inlayHints = {
+                bindingModeHints = { enable = true },
+                chainingHints = { enable = true },
+                closingBraceHints = { enable = true, minLines = 25 },
+                closureReturnTypeHints = { enable = 'always' },
+                lifetimeElisionHints = { enable = 'always' },
+                parameterHints = { enable = true },
+                typeHints = { enable = true },
+              },
+            },
+          },
+        },
+        dap = (vim.uv.fs_stat(codelldb_path) ~= nil) and {
+          adapter = require('rustaceanvim.config').get_codelldb_adapter(codelldb_path, liblldb_path),
+        } or nil,
+      }
+    end,
   },
-},
-      },
-    }
-  end,
-},
 
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
@@ -1019,7 +1398,28 @@ rust = { 'rustfmt' },
     branch = 'main',
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter-intro`
     config = function()
-      local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'rust' }
+      local parsers = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'rust',
+        'json',
+        'javascript',
+        'java',
+        'javadoc',
+        'python',
+        'typescript',
+        'tsx',
+        'yaml',
+      }
       require('nvim-treesitter').install(parsers)
       vim.api.nvim_create_autocmd('FileType', {
         callback = function(args)
@@ -1057,10 +1457,14 @@ rust = { 'rustfmt' },
   -- require 'kickstart.plugins.debug',
   require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.gitsigns',
   require 'custom.plugins.terminal',
+  require 'custom.plugins.aerial',
+  require 'custom.plugins.init',
+  -- require 'custom.plugins.vimtex',
+  -- require 'custom.plugins.snacks',
+  -- require 'custom.plugins.lualine',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
