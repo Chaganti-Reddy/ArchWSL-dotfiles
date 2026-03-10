@@ -172,5 +172,19 @@ return {
       local buf = last_source_buf or vim.api.nvim_get_current_buf()
       require('toggleterm').toggle(2, 15, get_buf_dir(buf), 'horizontal')
     end, { desc = 'Standard Horizontal Term' })
+
+    -- 3. LazyGit (leader-gt)
+    map('n', '<leader>tg', function()
+      local Terminal = require('toggleterm.terminal').Terminal
+      local lazygit = Terminal:new {
+        cmd = 'lazygit',
+        dir = get_buf_dir(last_source_buf or vim.api.nvim_get_current_buf()),
+        direction = 'float',
+        hidden = true,
+        close_on_exit = true,
+        float_opts = { border = 'curved' },
+      }
+      lazygit:toggle()
+    end, { desc = 'LazyGit' })
   end,
 }

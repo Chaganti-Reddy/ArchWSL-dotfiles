@@ -87,6 +87,21 @@ return {
         content = {
           filter = filter_hide,
         },
+        mappings = {
+          close = 'q',
+          go_in = 'l',
+          go_in_plus = 'L',
+          go_out = 'h',
+          go_out_plus = 'H',
+          mark_goto = "'",
+          mark_set = 'm',
+          reset = '<BS>',
+          reveal_cwd = '@',
+          show_help = 'g?',
+          synchronize = '=',
+          trim_left = '<',
+          trim_right = '>',
+        },
         windows = {
           max_number = 3,
           width_focus = 30,
@@ -96,6 +111,7 @@ return {
         },
         options = {
           use_as_default_explorer = true,
+          permanent_delete = false,
         },
       }
 
