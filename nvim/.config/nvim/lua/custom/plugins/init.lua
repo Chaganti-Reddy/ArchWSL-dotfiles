@@ -32,6 +32,8 @@ return {
     },
   },
 
+  { 'wakatime/vim-wakatime', lazy = false },
+
   {
     'rachartier/tiny-inline-diagnostic.nvim',
     -- event = 'VeryLazy', -- Load early
