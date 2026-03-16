@@ -131,9 +131,9 @@ return {
             vim.cmd(cmd .. ' ' .. vim.fn.fnameescape(entry.path))
           end
 
-          vim.keymap.set('n', '<C-s>', function() open_split 'split' end, { buffer = buf, desc = 'Open in horizontal split' })
-          vim.keymap.set('n', '<C-v>', function() open_split 'vsplit' end, { buffer = buf, desc = 'Open in vertical split' })
-          vim.keymap.set('n', '<C-t>', function() open_split 'tabedit' end, { buffer = buf, desc = 'Open in new tab' })
+          vim.keymap.set('n', '<C-h>', function() open_split 'split' end, { buffer = buf, desc = 'Open in horizontal split', nowait = true })
+          vim.keymap.set('n', '<C-x>', function() open_split 'vsplit' end, { buffer = buf, desc = 'Open in vertical split', nowait = true })
+          vim.keymap.set('n', '<C-t>', function() open_split 'tabedit' end, { buffer = buf, desc = 'Open in new tab', nowait = true })
         end,
       })
 
