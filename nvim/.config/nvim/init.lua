@@ -73,7 +73,9 @@ vim.keymap.set('v', '<A-Down>', ":m '>+1<CR>gv=gv", opts)
 vim.keymap.set('v', '<A-Up>', ":m '<-2<CR>gv=gv", opts)
 
 -- Save file
-vim.keymap.set({ 'n', 'i', 'v' }, '<C-s>', '<cmd>w<CR>', { desc = 'Save file' })
+vim.keymap.set('n', '<C-s>', '<cmd>w<CR>', { desc = 'Save file' })
+vim.keymap.set('v', '<C-s>', '<cmd>w<CR>', { desc = 'Save file' })
+vim.keymap.set('i', '<C-s>', '<Esc><cmd>w<CR>a', { desc = 'Save file' })
 
 -- Fix [A]ll [I]ndent
 vim.keymap.set('n', '<leader>cI', function()
@@ -628,7 +630,11 @@ require('lazy').setup({
       },
       snippets = { preset = 'luasnip' },
       fuzzy = { implementation = 'lua' },
-      enabled = function() return vim.bo.filetype ~= 'minifiles' end,
+      enabled = function()
+        local ft = vim.bo.filetype
+        if ft == '' or ft == 'minifiles' then return false end
+        return true
+      end,
       signature = { enabled = true, window = { border = 'rounded' } },
     },
   },
@@ -707,6 +713,8 @@ require('lazy').setup({
           ['`'] = { action = 'closeopen', pair = '``', neigh_pattern = '[^\\].', register = { cr = false } },
         },
       }
+
+      vim.keymap.del('i', '<CR>')
 
       -- Rust: disable ' pairing entirely (lifetimes: 'a, 'static, 'b: 'a)
       vim.api.nvim_create_autocmd('FileType', {
