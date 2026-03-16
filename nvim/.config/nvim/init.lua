@@ -9,6 +9,7 @@ vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 vim.o.number = true
+vim.o.relativenumber = true
 vim.o.mouse = 'a'
 vim.o.showmode = false
 vim.schedule(function() vim.o.clipboard = 'unnamedplus' end)
@@ -627,7 +628,7 @@ require('lazy').setup({
       },
       snippets = { preset = 'luasnip' },
       fuzzy = { implementation = 'lua' },
-      enabled = function() return true end,
+      enabled = function() return vim.bo.filetype ~= 'minifiles' end,
       signature = { enabled = true, window = { border = 'rounded' } },
     },
   },
