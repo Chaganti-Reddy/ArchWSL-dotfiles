@@ -51,6 +51,8 @@ fpath+=~/.zfunc; autoload -Uz compinit; compinit
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
 
+stty -ixon
+
 # >>> conda initialize >>>
 # !! Contents within this block are managed by "conda init" !!
 __conda_setup="$(/home/karna/miniconda/bin/conda shell.${SHELL##*/} hook 2> /dev/null)"
