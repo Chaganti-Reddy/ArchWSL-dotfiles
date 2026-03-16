@@ -118,7 +118,23 @@ return {
       -- Toggle hidden files inside mini.files
       vim.api.nvim_create_autocmd('User', {
         pattern = 'MiniFilesBufferCreate',
-        callback = function(args) vim.keymap.set('n', 'g.', toggle_dotfiles, { buffer = args.data.buf_id, desc = 'Toggle Hidden Files' }) end,
+        callback = function(args)
+          local buf = args.data.buf_id
+
+          vim.keymap.set('n', 'g.', toggle_dotfiles, { buffer = buf, desc = 'Toggle Hidden Files' })
+
+          -- Split open
+          local open_split = function(cmd)
+            local entry = require('mini.files').get_fs_entry()
+            if not entry or entry.fs_type ~= 'file' then return end
+            require('mini.files').close()
+            vim.cmd(cmd .. ' ' .. vim.fn.fnameescape(entry.path))
+          end
+
+          vim.keymap.set('n', '<C-s>', function() open_split 'split' end, { buffer = buf, desc = 'Open in horizontal split' })
+          vim.keymap.set('n', '<C-v>', function() open_split 'vsplit' end, { buffer = buf, desc = 'Open in vertical split' })
+          vim.keymap.set('n', '<C-t>', function() open_split 'tabedit' end, { buffer = buf, desc = 'Open in new tab' })
+        end,
       })
 
       -- Open mini.files (toggles if already open)
@@ -132,18 +148,18 @@ return {
     end,
   },
 
-{
-  'ThePrimeagen/harpoon',
-  branch = 'harpoon2',
-  dependencies = { 'nvim-lua/plenary.nvim' },
-  opts = {},
-  keys = {
-    { '<leader>ha', function() require('harpoon'):list():add() end, desc = '[H]arpoon [A]dd' },
-    { '<leader>hh', function() require('harpoon').ui:toggle_quick_menu(require('harpoon'):list()) end, desc = '[H]arpoon [M]enu' },
-    { '<leader>h1', function() require('harpoon'):list():select(1) end, desc = '[H]arpoon [1]' },
-    { '<leader>h2', function() require('harpoon'):list():select(2) end, desc = '[H]arpoon [2]' },
-    { '<leader>h3', function() require('harpoon'):list():select(3) end, desc = '[H]arpoon [3]' },
-    { '<leader>h4', function() require('harpoon'):list():select(4) end, desc = '[H]arpoon [4]' },
+  {
+    'ThePrimeagen/harpoon',
+    branch = 'harpoon2',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    opts = {},
+    keys = {
+      { '<leader>ha', function() require('harpoon'):list():add() end, desc = '[H]arpoon [A]dd' },
+      { '<leader>hh', function() require('harpoon').ui:toggle_quick_menu(require('harpoon'):list()) end, desc = '[H]arpoon [M]enu' },
+      { '<leader>h1', function() require('harpoon'):list():select(1) end, desc = '[H]arpoon [1]' },
+      { '<leader>h2', function() require('harpoon'):list():select(2) end, desc = '[H]arpoon [2]' },
+      { '<leader>h3', function() require('harpoon'):list():select(3) end, desc = '[H]arpoon [3]' },
+      { '<leader>h4', function() require('harpoon'):list():select(4) end, desc = '[H]arpoon [4]' },
+    },
   },
-},
 }
