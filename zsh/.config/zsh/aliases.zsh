@@ -203,3 +203,7 @@ alias a="attach"
 # calls the tmux new session script
 alias tns="~/scripts/tmux-sessionizer"
 # alias kickn='NVIM_APPNAME="nvim-kickstart" nvim'
+
+alias open='wslview'    # opens files/URLs in Windows default app
+alias pbcopy='clip.exe'
+alias pbpaste='powershell.exe -command "Get-Clipboard"'
