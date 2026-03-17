@@ -25,8 +25,11 @@ CYAN=$(tput setaf 6)
 
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-die()     { echo -e "${BOLD}${RED}ERROR:${RESET} $*" >&2; exit 1; }
-info()    { echo -e "${BOLD}${BLUE}INFO:${RESET} $*"; }
+die() {
+    echo -e "${BOLD}${RED}ERROR:${RESET} $*" >&2
+    exit 1
+}
+info() { echo -e "${BOLD}${BLUE}INFO:${RESET} $*"; }
 success() { echo -e "${BOLD}${GREEN}SUCCESS:${RESET} $*"; }
 warning() { echo -e "${BOLD}${CYAN}WARNING:${RESET} $*"; }
 
@@ -84,7 +87,7 @@ install_miniconda() {
 
     SHELL_CONFIGS=()
     [[ -f "$HOME/.bashrc" ]] && SHELL_CONFIGS+=("$HOME/.bashrc")
-    [[ -f "$HOME/.zshrc" ]]  && SHELL_CONFIGS+=("$HOME/.zshrc")
+    [[ -f "$HOME/.zshrc" ]] && SHELL_CONFIGS+=("$HOME/.zshrc")
     [[ ${#SHELL_CONFIGS[@]} -eq 0 ]] && die "Neither .bashrc nor .zshrc found."
 
     CONDA_BLOCK='
@@ -105,7 +108,7 @@ unset __conda_setup
     for config in "${SHELL_CONFIGS[@]}"; do
         if ! grep -q "conda initialize" "$config"; then
             info "Adding Conda init to $config..."
-            echo "$CONDA_BLOCK" >> "$config"
+            echo "$CONDA_BLOCK" >>"$config"
         else
             success "Conda init already present in $config."
         fi
@@ -135,7 +138,10 @@ install_pip_packages() {
     elif [ -f "$HOME/miniconda/etc/profile.d/conda.sh" ]; then
         info "Activating Conda base..."
         source "$HOME/miniconda/etc/profile.d/conda.sh"
-        conda activate base || { warning "Failed to activate Conda. Skipping pip."; return 0; }
+        conda activate base || {
+            warning "Failed to activate Conda. Skipping pip."
+            return 0
+        }
     else
         warning "Conda not found. Skipping pip install to protect system Python."
         return 0
@@ -211,7 +217,7 @@ step_system_base() {
         # File & text tools
         tree tar time unrar unzip zip rsync atool dos2unix 7zip
         bat eza fd ripgrep fzf jq yq xmlstarlet figlet lolcat
-        glow pandoc man-db man-pages ncdu progress trash-cli
+        glow pandoc man-db man-pages ncdu progress trash-cli thunar thunar-archive-plugin thunar-media-tags-plugin thunar-volman thunar-vcs-plugin nwg-look wslu qt5ct qt6ct catppuccin-gtk-theme-mocha papirus-icon-theme ttf-iosevka-nerd ttf-iosevkaterm-nerd
         # Dev tools
         python-pip python-psutil shellcheck shfmt prettier stylua
         luacheck lua51 gdb meld parallel translate-shell
@@ -324,8 +330,8 @@ step_encryption() {
     chmod 700 ~/.gnupg
 
     if ! grep -q "default-cache-ttl" ~/.gnupg/gpg-agent.conf 2>/dev/null; then
-        echo "default-cache-ttl 150"  >> ~/.gnupg/gpg-agent.conf
-        echo "max-cache-ttl 150"      >> ~/.gnupg/gpg-agent.conf
+        echo "default-cache-ttl 150" >>~/.gnupg/gpg-agent.conf
+        echo "max-cache-ttl 150" >>~/.gnupg/gpg-agent.conf
         gpgconf --kill gpg-agent
         success "GPG agent configured."
     else
@@ -354,12 +360,12 @@ step_ssh_setup() {
 
     # Append ssh-agent block using explicit echoes — avoids heredoc parsing issues
     if [ -f "$HOME/.bashrc" ] && ! grep -q "ssh-agent" "$HOME/.bashrc"; then
-        echo ''                                                        >> "$HOME/.bashrc"
-        echo '# SSH Agent (WSL)'                                       >> "$HOME/.bashrc"
-        echo 'if [ -z "$SSH_AUTH_SOCK" ]; then'                        >> "$HOME/.bashrc"
-        echo '    eval "$(ssh-agent -s)" > /dev/null'                  >> "$HOME/.bashrc"
-        echo '    ssh-add ~/.ssh/id_ed25519 2>/dev/null'               >> "$HOME/.bashrc"
-        echo 'fi'                                                       >> "$HOME/.bashrc"
+        echo '' >>"$HOME/.bashrc"
+        echo '# SSH Agent (WSL)' >>"$HOME/.bashrc"
+        echo 'if [ -z "$SSH_AUTH_SOCK" ]; then' >>"$HOME/.bashrc"
+        echo '    eval "$(ssh-agent -s)" > /dev/null' >>"$HOME/.bashrc"
+        echo '    ssh-add ~/.ssh/id_ed25519 2>/dev/null' >>"$HOME/.bashrc"
+        echo 'fi' >>"$HOME/.bashrc"
     fi
 }
 
@@ -401,7 +407,9 @@ step_stow_wsl() {
         latexmkrc
         enchant
         ytfzf
-	scripts
+        scripts
+        Templates
+        GTK
     )
 
     for folder in "${folders[@]}"; do
@@ -414,9 +422,9 @@ step_stow_wsl() {
     done
 
     if [ -d "Extras/Extras/etc" ]; then
-        [ -f "Extras/Extras/etc/nanorc" ]      && sudo cp Extras/Extras/etc/nanorc /etc/nanorc
+        [ -f "Extras/Extras/etc/nanorc" ] && sudo cp Extras/Extras/etc/nanorc /etc/nanorc
         [ -f "Extras/Extras/etc/bash.bashrc" ] && sudo cp Extras/Extras/etc/bash.bashrc /etc/bash.bashrc
-        [ -f "Extras/Extras/etc/DIR_COLORS" ]  && sudo cp Extras/Extras/etc/DIR_COLORS /etc/DIR_COLORS
+        [ -f "Extras/Extras/etc/DIR_COLORS" ] && sudo cp Extras/Extras/etc/DIR_COLORS /etc/DIR_COLORS
     fi
 
     if [ -f "Extras/Extras/.wakatime.cfg.cpt" ]; then
@@ -433,19 +441,19 @@ echo -e "${BOLD}${BLUE}Starting WSL Arch Setup (User: karna)${RESET}"
 echo -e "${BOLD}${CYAN}Log: $LOG_FILE${RESET}"
 echo ""
 
-run_task "Pacman Config"        step_pacman_config
-run_task "Install Paru"         step_install_paru
-run_task "System Base"          step_system_base
-run_task "Git & ZSH"            step_git_zsh_setup
-run_task "Node/NVM"             step_nodejs
-run_task "Editors"              step_editors
-run_task "Encryption/GPG"       step_encryption
-run_task "SSH Setup"            step_ssh_setup
-run_task "LazyDocker"           step_lazydocker
-run_task "Ani-CLI + MPV"        step_ani_mpv
-run_task "Miniconda"            install_miniconda
-run_task "Pip Packages"         install_pip_packages
-run_task "Stow Dotfiles"        step_stow_wsl
+run_task "Pacman Config" step_pacman_config
+run_task "Install Paru" step_install_paru
+run_task "System Base" step_system_base
+run_task "Git & ZSH" step_git_zsh_setup
+run_task "Node/NVM" step_nodejs
+run_task "Editors" step_editors
+run_task "Encryption/GPG" step_encryption
+run_task "SSH Setup" step_ssh_setup
+run_task "LazyDocker" step_lazydocker
+run_task "Ani-CLI + MPV" step_ani_mpv
+run_task "Miniconda" install_miniconda
+run_task "Pip Packages" install_pip_packages
+run_task "Stow Dotfiles" step_stow_wsl
 
 success "WSL Setup Finished."
 echo ""
