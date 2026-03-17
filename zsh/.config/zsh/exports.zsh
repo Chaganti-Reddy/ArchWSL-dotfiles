@@ -25,6 +25,7 @@ export XDG_DATA_DIRS="/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/
 export PUPPETEER_EXECUTABLE_PATH="/home/karna/.cache/puppeteer/chrome-headless-shell/linux-133.0.6943.53/chrome-headless-shell-linux64/chrome-headless-shell"
 export SUDO_EDITOR=/usr/bin/nvim
 export TMUX_CONF="$HOME/.config/tmux/tmux.conf" # tmux
+export XDG_DATA_DIRS="/usr/share:$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share"
 # export FZF_DEFAULT_OPTS="--layout=reverse --exact --border=bold --border=rounded --margin=3% --color=dark"
 # Set up FZF key bindings and fuzzy completion
 # Keymaps for this is available at https://github.com/junegunn/fzf-git.sh
