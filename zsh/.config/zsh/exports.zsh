@@ -13,6 +13,7 @@ export VISUAL='nvim'
 export BROWSER='/usr/bin/firefox'
 export PATH="$HOME/bin:/usr/local/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/share/gem/ruby/3.4.0/bin:$PATH"
 export PATH="$HOME/.config/scripts/:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/go/bin:$PATH"
