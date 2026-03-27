@@ -153,57 +153,25 @@ alias reposize="git count-objects -vH"
 alias jctl="journalctl -p 3 -xb"
 
 alias mkcd='f() { mkdir -p "$1" && cd "$1"; }; f'
-alias open='xdg-open'
-alias karna='cd /mnt/Karna'
+alias dev='cd /mnt/d'
+alias windev='cd /mnt/c/Users/vchagant/Downloads'
 
 alias mangaread="curl -sSL mangal.metafates.one/run | sh"
-alias torrentwatch1="peerflix -k -a -q"
-alias torrentwatch2="webtorrent --mpv"
-alias torrentdownload="webtorrent download"
 alias anime1="ani-cli"
 alias anime2="anipy-cli"
-alias animef="fastanime --fzf anilist"
 alias download="aria2c"
-alias timeshift-wayland="sudo -E timeshift-gtk"
-alias projk="cd /mnt/Karna/Git/Project-K/"
-alias portfolio="cd /mnt/Karna/Git/portfolio/"
-alias blog="cd /mnt/Karna/Git/Karna-Blog/"
 alias fontc="fc-cache -fv"
 alias autocommit="sh ~/dotfiles/gitAutoCommitter.sh"
-alias debugwaybar="waybar -l trace"
 alias rm="trash-put"
 alias tls="trash-list"
 alias trs="restore-trash"
 alias te="trash-empty"
-alias lazyg="lazygit"
-alias lazyd="lazydocker"
-alias llama3="ollama run llama3:8b"
-alias llama3k="ollama run llama3:8b-instruct-q6_K"
-alias ollzephyr="ollama run zephyr:latest"
-alias ollmistral="ollama run mistral:latest"
-alias olldeepcode="ollama run deepseek-coder:6.7b"
-alias ollquen25="ollama run quen2.5:3b"
-alias olldeep="ollama run deepseek-r1:8b"
-alias dsa="cd /mnt/Karna/Git/Project-K/Map/DSA/"
-alias lampp="sudo /opt/lampp/lampp"
-alias vi="vim"
-alias zlk="zellij --layout karna attach --create 'Karna'"
-alias zlc="zellij --layout compi attach --create 'DSA'"
+alias lzd="lazydocker"
 alias exmod="chmod +x"
 alias lg="lazygit"
-alias neofetch="fastfetch"
 alias cls="clear"
-alias lg="lazygit"
 alias cat='bat --style header --style snip --style changes --style header'
 alias fman="compgen -c | fzf | xargs man"
-
- # Tmux 
-alias tmux="tmux -f $TMUX_CONF"
-alias a="attach"
-# calls the tmux new session script
-alias tns="~/scripts/tmux-sessionizer"
-# alias kickn='NVIM_APPNAME="nvim-kickstart" nvim'
-
 alias open='wslview'    # opens files/URLs in Windows default app
 alias pbcopy='clip.exe'
 alias pbpaste='powershell.exe -command "Get-Clipboard"'
